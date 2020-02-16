@@ -26,15 +26,19 @@ for insert in INSERTS:
     insert_datas.insert_datas_products(insert)
 
 #Build interface for user
+answer = None
+while answer != 1 or answer != 2:
+    try:
+        answer = input('1: Quel aliment souhaitez vous remplacer?\n', 
+                        '2: Retrouver mes favoris')
+    except TypeError or answer != 1 or answer != 2:
+        print('Vous n\'avez pas choisi une option valable')
 
+if answer == 1:
+    category = input('Sélectionnez la catégorie:\n', '1: Sodas\n'
+                    '2: Beurres\n', '3: Produits laitiers\n', '4: Sauces\n'
+                    '5: Biscuits\n', '6: Chips')
+#Get datas from tables and prompt it to user depending on the category
 
-
-
-
-#Get favorites from user
-
-
-
-
-
-
+if answer == 2:
+    #Get favorites from user in favorites table and prompt it to user

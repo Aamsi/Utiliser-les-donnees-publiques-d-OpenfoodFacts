@@ -67,7 +67,7 @@ INSERT_INTO_CATEGORIES = """INSERT INTO Categories
    (category_name)
    VALUES(%(category_name)s)"""
 
-TERMS = ['soda', 'butter', 'peanut butter', 'milk product', 'mayonnaise', 'ketchup', 'barbecue sauce', 'milk'
+TERMS = ['soda', 'butter', 'milk product', 'mayonnaise', 'ketchup', 'barbecue sauce', 'milk'
             'yogurt', 'biscuits', 'chips']
 
 ATTRIBUTES = ['product_name', 'nutriscores', 'link', 'details', 'categories', 'stores']

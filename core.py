@@ -73,15 +73,15 @@ class Get_datas:
             # J'aime pas du tout mais je vois pas comment faire autrement
                 if attribute_name == 'product_name':
                     self.product_name.append(attribute)
-                if attribute_name == 'nutriscores':
+                elif attribute_name == 'nutriscores':
                     self.nutriscores.append(attribute)
-                if attribute_name == 'link':
+                elif attribute_name == 'link':
                     self.links.append(attribute)
-                if attribute_name == 'details':
+                elif attribute_name == 'details':
                     self.details.append(attribute)
-                if attribute_name == 'categories':
+                elif attribute_name == 'categories':
                     self.categories.append(attribute)
-                if attribute_name == 'stores':
+                elif attribute_name == 'stores':
                     self.stores.append(attribute)
 
     def set_dictionnary(self):
