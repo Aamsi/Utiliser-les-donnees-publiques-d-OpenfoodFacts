@@ -3,6 +3,8 @@ from mysql.connector import errorcode
 
 import requests
 
+from SQL_variables import TERMS
+
 
 class Create_tables:
     """Create tables for database"""
@@ -34,14 +36,7 @@ class Create_tables:
 class Get_datas:
     """Get datas from openfoodfacts API"""
 
-    def __init__(self, term, category):
-        self.payload = {
-            'search_terms': term,
-            'search_tag': category,
-            'sort_by': 'unique_scans_n',
-            'page_size': 10,
-            'json': 1
-        }
+    def __init__(self):
         self.products = None
         self.product_name = []
         self.nutriscores = []
@@ -51,15 +46,23 @@ class Get_datas:
         self.details = []
         self.dictionnary_datas = []
 
-    def get_json(self):
+    def get_json(self, term):
         """Get datas in json format from openfoodfacts API"""
-        res = requests.get('https://world.openfoodfacts.org/cgi/search.pl?', params=self.payload)
+        payload = {
+            'search_terms': term,
+            'sort_by': 'unique_scans_n',
+            'page_size': 10,
+            'json': 1
+        }
+
+        res = requests.get('https://world.openfoodfacts.org/cgi/search.pl?', 
+                        params=payload)
         results = res.json()
         products_list = results['products']
 
         self.products = products_list
 
-    def get_attribute(self, attribute_name, list_to_fill):
+    def get_attribute(self, attribute_name):
         """Get attribute we need from openfoodfacts API"""
         for product in self.products:
             try:
@@ -67,7 +70,19 @@ class Get_datas:
             except KeyError:
                 attribute = 0
 
-            list_to_fill.append(attribute)
+            # J'aime pas du tout mais je vois pas comment faire autrement
+                if attribute_name == 'product_name':
+                    self.product_name.append(attribute)
+                if attribute_name == 'nutriscores':
+                    self.nutriscores.append(attribute)
+                if attribute_name == 'link':
+                    self.links.append(attribute)
+                if attribute_name == 'details':
+                    self.details.append(attribute)
+                if attribute_name == 'categories':
+                    self.categories.append(attribute)
+                if attribute_name == 'stores':
+                    self.stores.append(attribute)
 
     def set_dictionnary(self):
         """Create dictionnary to insert datas into the db"""
@@ -85,3 +100,16 @@ class Get_datas:
             self.dictionnary_datas.append(line)
 
             i += 1
+
+            return self.dictionnary_datas
+
+
+class Insert_datas:
+
+    def __init__(self, datas, cursor):
+        self.datas = datas
+        self.cursor = cursor
+
+    def insert_datas_products(self, insert_into_products):
+        for data in self.datas:
+            self.cursor.execute(insert_into_products, data)
