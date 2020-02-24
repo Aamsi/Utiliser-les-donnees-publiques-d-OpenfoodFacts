@@ -2,7 +2,7 @@ import mysql.connector
 from mysql.connector import errorcode
 
 
-class InitSQL:
+class Database:
 
     def __init__(self, host, user, password, name_database):
         self.cnx = mysql.connector.connect(host=host, 
@@ -10,30 +10,33 @@ class InitSQL:
                                     password=password, 
                                     database=name_database)
         self.cursor = self.cnx.cursor()
-
-
-class TablePurchaseStores:
-
-    def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Purchase_stores (
-        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        store_name VARCHAR(255) NOT NULL,
-        PRIMARY KEY (id)
-        ) ENGINE=InnoDB"""
-        self.sql_query_insert_into = """INSERT INTO Purchase_stores
-        (store_name)
-        VALUES (%(store_name)s)"""
-
-    def create_table(self, cursor):
+    
+    def create_table(self, sql_query):
         try:
-            cursor.execute(self.sql_query_create_table)
+            self.cursor.execute(sql_query)
         except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                     print("already exists.")
                 else:
                     print(err.msg)
+
+
+class PurchaseStores(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Purchase_stores (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        store_name VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+        ) ENGINE=InnoDB"""
+    SQL_QUERY_INSERT_INTO = """INSERT INTO Purchase_stores
+        (store_name)
+        VALUES (%(store_name)s)"""
+
+    def __init__(self, database):
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, PurchaseStores.SQL_QUERY_CREATE_TABLE)
+        self.database = database
     
-    def insert_into_table(self, cnx, cursor, datas):
+    def insert_into_table(self, datas):
         stores = []
         for data in datas:
             for attribute in data:
@@ -45,33 +48,27 @@ class TablePurchaseStores:
         stores = list(dict.fromkeys(stores))
         for store in stores:
             store_to_add = {'store_name': store}
-            cursor.execute(self.sql_query_insert_into, store_to_add)
+            self.database.cursor.execute(PurchaseStores.SQL_QUERY_INSERT_INTO, store_to_add)
 
-        cnx.commit()
+        self.database.cnx.commit()
 
 
-class TableCategories:
-
-    def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Categories(
+class Categories(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Categories(
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         category_name VARCHAR(255) NOT NULL,
         PRIMARY KEY (id)
         ) ENGINE=InnoDB"""
-        self.sql_query_insert_into = """INSERT INTO Categories
+    SQL_QUERY_INSERT_INTO = """INSERT INTO Categories
         (category_name)
         VALUES(%(category_name)s)"""
 
-    def create_table(self, cursor):
-        try:
-            cursor.execute(self.sql_query_create_table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-    
-    def insert_into_table(self, cnx, cursor, datas):
+    def __init__(self, database):
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, Categories.SQL_QUERY_CREATE_TABLE)
+        self.database = database
+
+    def insert_into_table(self, datas):
         categories_list = []
         for data in datas:
             for attribute in data:
@@ -83,36 +80,31 @@ class TableCategories:
         categories_list = list(dict.fromkeys(categories_list))
         for category in categories_list:
             category_to_add = {'category_name': category}
-            cursor.execute(self.sql_query_insert_into, category_to_add)
+            self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO, 
+                                            category_to_add)
 
-        cnx.commit()
+        self.database.cnx.commit()
 
 
-class TableProducts:
-
-    def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Products (
+class Products(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Products (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         product_name VARCHAR(255) NOT NULL,
-        nutriscore VARCHAR(1) NOT NULL,
+        nutriscore TEXT NOT NULL,
         link TEXT NOT NULL,
         details TEXT,
         PRIMARY KEY (id)
         ) ENGINE=InnoDB"""
-        self.sql_query_insert_into = """INSERT INTO Products
+    SQL_QUERY_INSERT_INTO = """INSERT INTO Products
         (product_name, nutriscore, link, details)
         VALUES (%(product_name)s, %(nutriscore)s, %(link)s, %(details)s)"""
 
-    def create_table(self, cursor):
-        try:
-            cursor.execute(self.sql_query_create_table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
+    def __init__(self, database):
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, Products.SQL_QUERY_CREATE_TABLE)
+        self.database = database
 
-    def insert_into_table(self, cnx, cursor, datas):
+    def insert_into_table(self, datas):
         for data in datas:
             for attribute in data:
                 attributes = {
@@ -121,14 +113,12 @@ class TableProducts:
                     'link': 'https://world.openfoodfacts.org/product/{}'.format(attribute['code']),
                     'details': attribute['generic_name_fr']
                 }
-                cursor.execute(self.sql_query_insert_into, attributes)
+                self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, attributes)
 
-        cnx.commit()
+        self.database.cnx.commit()
 
-class TableFavorites:
-
-    def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Favorites (
+class Favorites(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Favorites (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         product_id_replaced INT UNSIGNED NOT NULL,
         product_id_replacement INT UNSIGNED NOT NULL,
@@ -141,20 +131,13 @@ class TableFavorites:
             REFERENCES Products(id)
         ) ENGINE=InnoDB"""
 
-    def create_table(self, cursor):
-        try:
-            cursor.execute(self.sql_query_create_table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-
-
-class TableProductCategories:
-
     def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Product_categories (
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, Favorites.SQL_QUERY_CREATE_TABLE)
+
+
+class ProductCategories(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Product_categories (
         product_id INT UNSIGNED NOT NULL,
         category_product_id INT UNSIGNED NOT NULL,
         CONSTRAINT fk_product_id_cat
@@ -165,20 +148,13 @@ class TableProductCategories:
             REFERENCES Categories(id)
         ) ENGINE=InnoDB"""
 
-    def create_table(self, cursor):
-        try:
-            cursor.execute(self.sql_query_create_table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-
-
-class TableProductStores:
-
     def __init__(self):
-        self.sql_query_create_table = """CREATE TABLE Product_stores (
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, ProductCategories.SQL_QUERY_CREATE_TABLE)
+
+
+class ProductStores(Database):
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Product_stores (
         product_id INT UNSIGNED NOT NULL,
         purchase_store_id INT UNSIGNED NOT NULL,
         CONSTRAINT fk_product_id_stores
@@ -186,22 +162,6 @@ class TableProductStores:
             REFERENCES Purchase_stores(id)
         ) ENGINE=InnoDB"""
 
-    def create_table(self, cursor):
-        try:
-            cursor.execute(self.sql_query_create_table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-
-
-class Execute_SQL_methods:
-
-    def __init__(self, cursor, tables_object):
-        self.tables_object = tables_object
-        self.cursor = cursor
-
-    def creating_tables(self):
-        for table in self.tables_object:
-            table.create_table(self.cursor)
+    def __init__(self):
+        Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+        Database.create_table(self, ProductStores.SQL_QUERY_CREATE_TABLE)
