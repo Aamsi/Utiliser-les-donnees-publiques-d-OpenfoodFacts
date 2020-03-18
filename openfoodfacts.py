@@ -1,9 +1,10 @@
 import requests
 
+
 class Openfoodfacts:
 
     def __init__(self):
-        self.products = []
+        pass
 
     def search_product(self, terms):
         products_list = []
@@ -26,4 +27,4 @@ class Openfoodfacts:
             product = prod['products']
             products.append(product)
         
-        self.products = products
+        return products
