@@ -5,9 +5,9 @@ from mysql.connector import errorcode
 class Database:
 
     def __init__(self, host, user, password, name_database):
-        self.cnx = mysql.connector.connect(host=host, 
-                                    user=user, 
-                                    password=password, 
+        self.cnx = mysql.connector.connect(host=host,
+                                    user=user,
+                                    password=password,
                                     database=name_database)
         self.cursor = self.cnx.cursor()
 
@@ -49,7 +49,8 @@ class PurchaseStores(Table):
         stores = list(dict.fromkeys(stores))
         for store in stores:
             store_to_add = {'store_name': store}
-            self.database.cursor.execute(PurchaseStores.SQL_QUERY_INSERT_INTO, store_to_add)
+            self.database.cursor.execute(PurchaseStores.SQL_QUERY_INSERT_INTO,
+                                             store_to_add)
 
         self.database.cnx.commit()
 
@@ -76,7 +77,7 @@ class Categories(Table):
         categories_list = list(dict.fromkeys(categories_list))
         for category in categories_list:
             category_to_add = {'category_name': category}
-            self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO, 
+            self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO,
                                             category_to_add)
 
         self.database.cnx.commit()

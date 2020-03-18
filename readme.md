@@ -1,1 +1,4 @@
-Titre avec nom du programme et comment l'installer.
+Pour lancer le programme: main.py
+
+Installer les packages necessaires:
+        - pip install -r requirements.txt

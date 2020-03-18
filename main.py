@@ -1,4 +1,4 @@
-# from database import (Database, PurchaseStores, Categories, Products, 
+# from database import (Database, PurchaseStores, Categories, Products,
 #                         Favorites, ProductCategories, ProductStores)
 from database import (Database, PurchaseStores, Categories)
 
@@ -6,7 +6,7 @@ from openfoodfacts import Openfoodfacts
 
 terms = ["mayonnaise", "ketchup", "milk", "biscuits", "chips"]
 
-db = Database('localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
+db = Database('localhost', 'student_p5', 'studentOC97', 'openfoodfacts')
 
 datas = Openfoodfacts()
 products = datas.search_product(terms)
@@ -25,5 +25,3 @@ categories.insert_into_table(products)
 # favorites = Favorites()
 
 # products_categories = ProductCategories()
-
-# product_stores = ProductStores()
