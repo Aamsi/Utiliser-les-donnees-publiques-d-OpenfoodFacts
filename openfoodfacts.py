@@ -28,3 +28,4 @@ class Openfoodfacts:
             products.append(product)
 
         return products
+

@@ -6,9 +6,9 @@ class Database:
 
     def __init__(self, host, user, password, name_database):
         self.cnx = mysql.connector.connect(host=host,
-                                    user=user,
-                                    password=password,
-                                    database=name_database)
+                                           user=user,
+                                           password=password,
+                                           database=name_database)
         self.cursor = self.cnx.cursor()
 
 
@@ -28,6 +28,7 @@ class Table:
 
 
 class PurchaseStores(Table):
+
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE Purchase_stores (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         store_name VARCHAR(255) NOT NULL,
@@ -44,18 +45,23 @@ class PurchaseStores(Table):
                 purchase_store = attribute['stores']
                 purchase_stores = purchase_store.split(',')
                 for store in purchase_stores:
-                    stores.append(store)
+                    try:
+                        if store[0] != " ":
+                            stores.append(store)
+                    except IndexError:
+                        pass
 
         stores = list(dict.fromkeys(stores))
         for store in stores:
             store_to_add = {'store_name': store}
             self.database.cursor.execute(PurchaseStores.SQL_QUERY_INSERT_INTO,
-                                             store_to_add)
+                                         store_to_add)
 
         self.database.cnx.commit()
 
 
 class Categories(Table):
+
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE Categories(
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         category_name VARCHAR(255) NOT NULL,
@@ -69,50 +75,45 @@ class Categories(Table):
         categories_list = []
         for data in datas:
             for attribute in data:
-                category = attribute['categories']
-                categories = category.split(',')
-                for category in categories:
-                    categories_list.append(category)
+                categories = attribute['categories']
+                categories = categories.split(',')
+                categories_list.append(categories[0])
 
         categories_list = list(dict.fromkeys(categories_list))
         for category in categories_list:
             category_to_add = {'category_name': category}
             self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO,
-                                            category_to_add)
+                                         category_to_add)
 
         self.database.cnx.commit()
 
 
-# class Products(Database):
-#     SQL_QUERY_CREATE_TABLE = """CREATE TABLE Products (
-#         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-#         product_name VARCHAR(255) NOT NULL,
-#         nutriscore TEXT NOT NULL,
-#         link TEXT NOT NULL,
-#         details TEXT,
-#         PRIMARY KEY (id)
-#         ) ENGINE=InnoDB"""
-#     SQL_QUERY_INSERT_INTO = """INSERT INTO Products
-#         (product_name, nutriscore, link, details)
-#         VALUES (%(product_name)s, %(nutriscore)s, %(link)s, %(details)s)"""
+class Products(Table):
 
-#     def __init__(self, database):
-#         Database.__init__(self, 'localhost', 'student_P5', 'studentOC97', 'openfoodfacts_P5')
-#         Database.create_table(self, Products.SQL_QUERY_CREATE_TABLE)
-#         self.database = database
+    SQL_QUERY_CREATE_TABLE = """CREATE TABLE Products (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        product_name VARCHAR(255) NOT NULL,
+        nutriscore TEXT NOT NULL,
+        link TEXT NOT NULL,
+        details TEXT,
+        PRIMARY KEY (id)
+        ) ENGINE=InnoDB"""
+    SQL_QUERY_INSERT_INTO = """INSERT INTO Products
+        (product_name, nutriscore, link, details)
+        VALUES (%(product_name)s, %(nutriscore)s, %(link)s, %(details)s)"""
 
-#     def insert_into_table(self, datas):
-#         for data in datas:
-#             for attribute in data:
-#                 attributes = {
-#                     'product_name': attribute['product_name_fr'],
-#                     'nutriscore': attribute['nutrition_grades_tags'][0],
-#                     'link': 'https://world.openfoodfacts.org/product/{}'.format(attribute['code']),
-#                     'details': attribute['generic_name_fr']
-#                 }
-#                 self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, attributes)
+    def insert_into_table(self, datas):
+        for data in datas:
+            for attribute in data:
+                attributes = {
+                    'product_name': attribute['product_name_fr'],
+                    'nutriscore': attribute['nutrition_grades_tags'][0],
+                    'link': 'https://world.openfoodfacts.org/product/{}'.format(attribute['code']),
+                    'details': attribute['generic_name_fr']
+                }
+                self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, attributes)
 
-#         self.database.cnx.commit()
+                self.database.cnx.commit()
 
 # class Favorites(Database):
 #     SQL_QUERY_CREATE_TABLE = """CREATE TABLE Favorites (
