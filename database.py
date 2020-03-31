@@ -1,5 +1,4 @@
 import mysql.connector
-from mysql.connector import errorcode
 
 
 class Database:
@@ -98,7 +97,8 @@ class Products(Table):
                 'link': product['link'],
                 'details': product['details']
             }
-            self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, product_attributes)
+            self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO,
+                                         product_attributes)
             self.database.cnx.commit()
 
 
@@ -116,8 +116,8 @@ class Favorites(Table):
              REFERENCES Products(id)
          ) ENGINE=InnoDB"""
 
-    SQL_QUERY_INSERT_INTO = """INSERT IGNORE INTO
-                                Favorites(product_id_replaced, product_id_replacement)
+    SQL_QUERY_INSERT_INTO = """INSERT IGNORE INTO Favorites
+                            (product_id_replaced, product_id_replacement)
                             SELECT
                                 p0.id,
                                 p1.id
@@ -131,7 +131,8 @@ class Favorites(Table):
                                 p1.product_name = %s"""
 
     def insert_into_table(self, product_names):
-        self.database.cursor.execute(Favorites.SQL_QUERY_INSERT_INTO, product_names)
+        self.database.cursor.execute(Favorites.SQL_QUERY_INSERT_INTO,
+                                     product_names)
         self.database.cnx.commit()
 
 
@@ -170,7 +171,8 @@ class ProductCategories(Table):
             prod_cat.append(prod_cat_to_add)
 
         for item in prod_cat:
-           self.database.cursor.execute(ProductCategories.SQL_QUERY_INSERT_INTO, item)
+            self.database.cursor.execute(ProductCategories.
+                                         SQL_QUERY_INSERT_INTO, item)
         self.database.cnx.commit()
 
         return prod_cat
@@ -208,7 +210,8 @@ class ProductStores(Table):
             prod_store.append(prod_store_to_add)
 
         for item in prod_store:
-            self.database.cursor.execute(ProductStores.SQL_QUERY_INSERT_INTO, item)
+            self.database.cursor.execute(ProductStores.
+                                         SQL_QUERY_INSERT_INTO, item)
 
         self.database.cnx.commit()
 
@@ -282,7 +285,8 @@ class ReturnDatas(Table):
         return prod_cat
 
     def return_details(self, product_name):
-        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_DETAILS, product_name)
+        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_DETAILS,
+                                     product_name)
         details = []
         for detail in self.database.cursor:
             details.append(detail)
@@ -307,15 +311,13 @@ class ReturnDatas(Table):
 
         return favs_names
 
-class Display():
 
-    def __init__(self):
-        pass
+class Display():
 
     def input(self, nb, message=""):
         answer = 0
         not_int = True
-        while not_int == True or answer < 0 or answer > nb:
+        while not_int or answer < 0 or answer > nb:
             try:
                 answer = int(input(message))
                 not_int = False
@@ -350,6 +352,6 @@ class Display():
             print("{} - {}".format(i + 1, name[0]))
 
     def disp_details(self, prod):
-        print("Nom: {}\nNutriscore: {}\nLien: {}\nDescription: {}\nOu l'acheter?: {}\n"
-                .format(prod[0][0], prod[0][1], prod[0][2], prod[0][3], prod[0][4]))
-
+        print("Nom: {}\nNutriscore: {}\nLien: {}\nDescription: {}\n\
+Ou l'acheter?: {}\n".format(prod[0][0], prod[0][1], prod[0][2],
+                            prod[0][3], prod[0][4]))

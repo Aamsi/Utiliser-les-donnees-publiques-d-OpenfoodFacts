@@ -14,12 +14,12 @@ class Openfoodfacts:
             payload = {
                 'search_terms': search_term,
                 'sort_by': 'unique_scans_n',
-                'page_size': 50,
+                'page_size': 10,
                 'json': 1
             }
 
             res = requests.get('https://fr.openfoodfacts.org/cgi/search.pl?',
-                            params=payload)
+                               params=payload)
             results = res.json()
             products.append(results['products'])
 
@@ -33,7 +33,8 @@ class Openfoodfacts:
                 attributes = {
                     'product_name': attribute['product_name_fr'],
                     'nutriscore': attribute['nutrition_grades_tags'][0],
-                    'link': 'https://world.openfoodfacts.org/product/{}'.format(attribute['code']),
+                    'link': 'https://world.openfoodfacts.org/product/{}'.
+                    format(attribute['code']),
                     'details': self.generic_name(attribute),
                     'stores': self.filter_store(attribute),
                     'categories': self.filter_category(attribute)
@@ -44,7 +45,8 @@ class Openfoodfacts:
 
     def filter_store(self, attribute):
         try:
-            return attribute['stores_tags'][0].strip().capitalize().replace('-', ' ')
+            return attribute['stores_tags'][0].strip().capitalize()\
+                .replace('-', ' ')
         except IndexError:
             return 'Aucun'
 
