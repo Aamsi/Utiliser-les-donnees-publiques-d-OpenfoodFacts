@@ -1,5 +1,5 @@
-#   :broccoli: Eat healthy, be wealthy :broccoli:
-Parce que manger sainement, ça peut  être cool!
+#   :green_apple: Eat healthy, be wealthy :green_apple:
+Parce que c'est cooooool
 
 
 
