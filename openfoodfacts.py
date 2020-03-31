@@ -2,37 +2,34 @@ import requests
 
 
 class Openfoodfacts:
+    """Request data and treat it"""
 
-    def __init__(self):
-        pass
+    def __init__(self, search_terms=[]):
+        self.search_terms = search_terms
 
-    def search_product(self, terms):
-        products_list = []
+    def search_product(self):
         products = []
 
-        for term in terms:
+        for search_term in self.search_terms:
             payload = {
-                'search_terms': term,
+                'search_terms': search_term,
                 'sort_by': 'unique_scans_n',
-                'page_size': 10,
+                'page_size': 50,
                 'json': 1
             }
 
             res = requests.get('https://fr.openfoodfacts.org/cgi/search.pl?',
                             params=payload)
             results = res.json()
-            products_list.append(results)
-
-        for prod in products_list:
-            product = prod['products']
-            products.append(product)
+            products.append(results['products'])
 
         return products
 
-    def create_dict(self, datas):
-        all_products = []
-        for data in datas:
-            for attribute in data:
+    def create_dict(self):
+        products = self.search_product()
+        ordered_products = []
+        for product in products:
+            for attribute in product:
                 attributes = {
                     'product_name': attribute['product_name_fr'],
                     'nutriscore': attribute['nutrition_grades_tags'][0],
@@ -41,9 +38,9 @@ class Openfoodfacts:
                     'stores': self.filter_store(attribute),
                     'categories': self.filter_category(attribute)
                 }
-                all_products.append(attributes)
+                ordered_products.append(attributes)
 
-        return all_products
+        return ordered_products
 
     def filter_store(self, attribute):
         try:

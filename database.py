@@ -3,6 +3,7 @@ from mysql.connector import errorcode
 
 
 class Database:
+    """Connect to database"""
 
     def __init__(self, host, user, password, name_database):
         self.cnx = mysql.connector.connect(host=host,
@@ -22,6 +23,7 @@ class Table:
 
 
 class PurchaseStores(Table):
+    """Create Purchase_stores and insert stores in it"""
 
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Purchase_stores (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -32,22 +34,22 @@ class PurchaseStores(Table):
         (store_name)
         VALUES (%(store_name)s)"""
 
-    def insert_into_table(self, datas):
+    def insert_into_table(self, products):
         stores = []
-        for data in datas:
-            if data['stores'] != 0:
-                stores.append(data['stores'])
+        for product in products:
+            if product['stores'] != 0:
+                stores.append(product['stores'])
 
         stores = list(dict.fromkeys(stores))
         for store in stores:
             store_to_add = {'store_name': store}
             self.database.cursor.execute(PurchaseStores.SQL_QUERY_INSERT_INTO,
                                          store_to_add)
-
         self.database.cnx.commit()
 
 
 class Categories(Table):
+    """Create Categories and insert categories in it"""
 
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Categories(
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -60,22 +62,21 @@ class Categories(Table):
     SQL_QUERY_PRINT = """SELECT category_name FROM
                             Categories"""
 
-    def insert_into_table(self, datas):
+    def insert_into_table(self, products):
         categories_list = []
-        for data in datas:
-            if data['categories'] != 0:
-                categories_list.append(data['categories'])
+        for product in products:
+            categories_list.append(product['categories'])
 
         categories_list = list(dict.fromkeys(categories_list))
         for category in categories_list:
             category_to_add = {'category_name': category}
             self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO,
                                          category_to_add)
-
         self.database.cnx.commit()
 
 
 class Products(Table):
+    """Create Products and insert productsm nutriscore, details, link in it"""
 
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Products (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -89,25 +90,24 @@ class Products(Table):
         (product_name, nutriscore, link, details)
         VALUES (%(product_name)s, %(nutriscore)s, %(link)s, %(details)s)"""
 
-    def insert_into_table(self, datas):
-        for data in datas:
-            attributes = {
-                'product_name': data['product_name'],
-                'nutriscore': data['nutriscore'],
-                'link': data['link'],
-                'details': data['details']
+    def insert_into_table(self, products):
+        for product in products:
+            product_attributes = {
+                'product_name': product['product_name'],
+                'nutriscore': product['nutriscore'],
+                'link': product['link'],
+                'details': product['details']
             }
-            self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, attributes)
-
+            self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO, product_attributes)
             self.database.cnx.commit()
 
 
 class Favorites(Table):
+    """Create Favorites and insert substitutes ids in it"""
+
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Favorites (
-         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
          product_id_replaced INT UNSIGNED NOT NULL,
-         product_id_replacement INT UNSIGNED NOT NULL,
-         PRIMARY KEY (id),
+         product_id_replacement INT UNSIGNED NOT NULL UNIQUE,
          CONSTRAINT fk_product_id_replaced
              FOREIGN KEY (product_id_replaced)
              REFERENCES Products(id),
@@ -116,7 +116,7 @@ class Favorites(Table):
              REFERENCES Products(id)
          ) ENGINE=InnoDB"""
 
-    SQL_QUERY_INSERT_INTO = """INSERT INTO
+    SQL_QUERY_INSERT_INTO = """INSERT IGNORE INTO
                                 Favorites(product_id_replaced, product_id_replacement)
                             SELECT
                                 p0.id,
@@ -136,6 +136,7 @@ class Favorites(Table):
 
 
 class ProductCategories(Table):
+    """Create link table between Products and Categories"""
 
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Product_categories (
          product_id INT UNSIGNED NOT NULL UNIQUE,
@@ -162,22 +163,22 @@ class ProductCategories(Table):
                         and
                             category_name = %s"""
 
-    def insert_into_table(self, datas):
+    def insert_into_table(self, products):
         prod_cat = []
-        for data in datas:
-            attribute = (data['product_name'], data['categories'])
-            if attribute[1] != 0:
-                prod_cat.append(attribute)
+        for product in products:
+            prod_cat_to_add = (product['product_name'], product['categories'])
+            prod_cat.append(prod_cat_to_add)
 
-        for duo in prod_cat:
-           self.database.cursor.execute(ProductCategories.SQL_QUERY_INSERT_INTO, duo)
-
+        for item in prod_cat:
+           self.database.cursor.execute(ProductCategories.SQL_QUERY_INSERT_INTO, item)
         self.database.cnx.commit()
 
         return prod_cat
 
 
 class ProductStores(Table):
+    """Create link table between Products en stores"""
+
     SQL_QUERY_CREATE_TABLE = """CREATE TABLE IF NOT EXISTS Product_stores (
          product_id INT UNSIGNED NOT NULL UNIQUE,
          purchase_store_id INT UNSIGNED NOT NULL,
@@ -200,22 +201,22 @@ class ProductStores(Table):
                             AND
                                 ps.store_name = %s"""
 
-    def insert_into_table(self, datas):
+    def insert_into_table(self, products):
         prod_store = []
-        for data in datas:
-            attribute = data['product_name'], data['stores']
-            if attribute[1] != 0:
-                prod_store.append(attribute)
+        for product in products:
+            prod_store_to_add = product['product_name'], product['stores']
+            prod_store.append(prod_store_to_add)
 
-        for duo in prod_store:
-            self.database.cursor.execute(ProductStores.SQL_QUERY_INSERT_INTO, duo)
+        for item in prod_store:
+            self.database.cursor.execute(ProductStores.SQL_QUERY_INSERT_INTO, item)
 
         self.database.cnx.commit()
 
 
-class Interface(Table):
+class ReturnDatas(Table):
+    """Return necessary data from database to print it to user"""
 
-    SQL_QUERY_PRINT_CATEGORIES = """SELECT category_name FROM
+    SQL_QUERY_SELECT_CATEGORIES = """SELECT category_name FROM
                                     Categories"""
 
     SQL_QUERY_SELECT_PROD_CAT = """SELECT
@@ -253,7 +254,7 @@ class Interface(Table):
                                 AND
                                     ps.purchase_store_id = s.id"""
 
-    SQL_QUERY_RETURN_FAV_NAMES = """SELECT
+    SQL_QUERY_SELECT_FAV_NAMES = """SELECT
                                 product_name
                             FROM
                                 Products as p
@@ -262,26 +263,8 @@ class Interface(Table):
                             WHERE
                                 p.id = f.product_id_replacement"""
 
-    SQL_QUERY_RETURN_FAV_DETAILS = """SELECT
-                                        product_name,
-                                        link,
-                                        details,
-                                        s.store_name
-                                    FROM
-                                        Products as p
-                                    CROSS JOIN
-                                        Purchase_stores as s
-                                    CROSS JOIN
-                                        Product_stores as ps
-                                    WHERE
-                                        p.product_name = %s
-                                    AND
-                                        p.id = ps.product_id
-                                    AND
-                                        ps.purchase_store_id = s.id"""
-
     def return_categories(self):
-        self.database.cursor.execute(Interface.SQL_QUERY_PRINT_CATEGORIES)
+        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_CATEGORIES)
         categories = []
         for category in self.database.cursor:
             cat_to_add = category[0]
@@ -289,17 +272,17 @@ class Interface(Table):
 
         return categories
 
-    def return_prod_cat_store(self):
-        self.database.cursor.execute(Interface.SQL_QUERY_SELECT_PROD_CAT)
-        prod_cat_store = []
-        for el in self.database.cursor:
-            el_to_add = el[0], el[1]
-            prod_cat_store.append(el_to_add)
+    def return_prod_cat(self):
+        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_PROD_CAT)
+        prod_cat = []
+        for item in self.database.cursor:
+            prod_cat_to_add = item[0], item[1]
+            prod_cat.append(prod_cat_to_add)
 
-        return prod_cat_store
+        return prod_cat
 
     def return_details(self, product_name):
-        self.database.cursor.execute(Interface.SQL_QUERY_SELECT_DETAILS, product_name)
+        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_DETAILS, product_name)
         details = []
         for detail in self.database.cursor:
             details.append(detail)
@@ -307,20 +290,66 @@ class Interface(Table):
         return details
 
     def return_replace(self, nutriscore_bef, prod_list):
-        to_return = None
+        replace_to_return = None
         for prod in prod_list:
             prod_replace_details = self.return_details(prod)
             if prod_replace_details[0][1] < nutriscore_bef:
-                to_return = prod_replace_details
+                replace_to_return = prod_replace_details
                 self.return_replace(prod_replace_details[0][1], prod_list)
 
-        return to_return
+        return replace_to_return
 
     def return_fav_names(self):
-        self.database.cursor.execute(Interface.SQL_QUERY_RETURN_FAV_NAMES)
+        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_FAV_NAMES)
         favs_names = []
         for fav_name in self.database.cursor:
             favs_names.append(fav_name)
 
         return favs_names
+
+class Display():
+
+    def __init__(self):
+        pass
+
+    def input(self, nb, message=""):
+        answer = 0
+        not_int = True
+        while not_int == True or answer < 0 or answer > nb:
+            try:
+                answer = int(input(message))
+                not_int = False
+            except ValueError:
+                print('Il faut entrer un nombre')
+
+            if answer < 0 or answer > nb:
+                print('Entrez un nombre valide')
+
+        return answer
+
+    def disp_categories(self, category_list):
+        print('Choisissez une categorie\n')
+        for i, category in enumerate(category_list):
+            print("{}- {}".format(i + 1, category))
+
+    def disp_products(self, category_list, prod_cat, answer):
+        print('Choisissez un produit\n')
+        i = 0
+        prod_list = []
+        for item in prod_cat:
+            if category_list[answer - 1] == item[1]:
+                print("{} - {}".format(i + 1, item[0]))
+                prod_to_add = (item[0],)
+                prod_list.append(prod_to_add)
+                i += 1
+
+        return prod_list
+
+    def disp_favs(self, fav_names):
+        for i, name in enumerate(fav_names):
+            print("{} - {}".format(i + 1, name[0]))
+
+    def disp_details(self, prod):
+        print("Nom: {}\nNutriscore: {}\nLien: {}\nDescription: {}\nOu l'acheter?: {}\n"
+                .format(prod[0][0], prod[0][1], prod[0][2], prod[0][3], prod[0][4]))
 
