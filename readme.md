@@ -12,7 +12,9 @@ run `pip install -r requirements.txt`
 #### Ok mais pour quoi faire?
 
 Tu peux rechercher des aliments dans la base de donnee et voir leur description.
+
 Tu peux chercher un substitut pour aliment que t'aimerais remplacer.
+
 Tu peux sauvegarder tes aliments favoris pour les retrouver plus tard.
 
 Et voilà! :ok_hand:
