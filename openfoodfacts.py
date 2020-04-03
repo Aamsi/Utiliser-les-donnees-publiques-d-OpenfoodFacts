@@ -4,17 +4,14 @@ import requests
 class Openfoodfacts:
     """Request data and treat it"""
 
-    def __init__(self, search_terms=[]):
-        self.search_terms = search_terms
-
-    def search_product(self):
+    def search_product(self, search_terms):
         products = []
 
-        for search_term in self.search_terms:
+        for search_term in search_terms:
             payload = {
                 'search_terms': search_term,
                 'sort_by': 'unique_scans_n',
-                'page_size': 10,
+                'page_size': 50,
                 'json': 1
             }
 
@@ -25,8 +22,8 @@ class Openfoodfacts:
 
         return products
 
-    def create_dict(self):
-        products = self.search_product()
+    def create_dict(self, search_terms):
+        products = self.search_product(search_terms)
         ordered_products = []
         for product in products:
             for attribute in product:

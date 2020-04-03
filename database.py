@@ -1,4 +1,6 @@
 import mysql.connector
+from openfoodfacts import Openfoodfacts
+from config import HOST, USER, PASSWORD, DATABASE
 
 
 class Database:
@@ -9,7 +11,7 @@ class Database:
                                            user=user,
                                            password=password,
                                            database=name_database)
-        self.cursor = self.cnx.cursor()
+        self.cursor = self.cnx.cursor(buffered=True)
 
 
 class Table:
@@ -58,8 +60,8 @@ class Categories(Table):
     SQL_QUERY_INSERT_INTO = """INSERT IGNORE INTO Categories
         (category_name)
         VALUES(%(category_name)s)"""
-    SQL_QUERY_PRINT = """SELECT category_name FROM
-                            Categories"""
+    SQL_QUERY_SELECT_CATEGORIES = """SELECT category_name FROM
+                                    Categories"""
 
     def insert_into_table(self, products):
         categories_list = []
@@ -73,6 +75,15 @@ class Categories(Table):
                                          category_to_add)
         self.database.cnx.commit()
 
+    def return_categories(self):
+        self.database.cursor.execute(Categories.SQL_QUERY_SELECT_CATEGORIES)
+        categories = []
+        for category in self.database.cursor:
+            cat_to_add = category[0]
+            categories.append(cat_to_add)
+
+        return categories
+
 
 class Products(Table):
     """Create Products and insert productsm nutriscore, details, link in it"""
@@ -85,9 +96,71 @@ class Products(Table):
         details TEXT,
         PRIMARY KEY (id)
         ) ENGINE=InnoDB"""
+
     SQL_QUERY_INSERT_INTO = """INSERT IGNORE INTO Products
         (product_name, nutriscore, link, details)
         VALUES (%(product_name)s, %(nutriscore)s, %(link)s, %(details)s)"""
+
+    SQL_QUERY_SELECT_PROD_CAT = """SELECT
+                                    p.product_name,
+                                    c.category_name,
+                                    pc.product_id,
+                                    pc.category_product_id
+                                FROM
+                                    Products as p
+                                CROSS JOIN
+                                    Categories as c
+                                CROSS JOIN
+                                    Product_categories as pc
+                                WHERE
+                                    p.id = pc.product_id
+                                AND
+                                    c.id = pc.category_product_id"""
+
+    SQL_QUERY_SELECT_DETAILS = """SELECT
+                                    product_name,
+                                    nutriscore,
+                                    link,
+                                    details,
+                                    s.store_name
+                                FROM
+                                    Products as p
+                                CROSS JOIN
+                                    Purchase_stores as s
+                                CROSS JOIN
+                                    Product_stores as ps
+                                WHERE
+                                    p.product_name = %s
+                                AND
+                                    p.id = ps.product_id
+                                AND
+                                    ps.purchase_store_id = s.id"""
+
+    SQL_QUERY_REPLACE = """SELECT
+                           p0.product_name
+                        FROM
+                            Products as p0
+                        CROSS JOIN
+                            Products as p1
+                        CROSS JOIN
+                            Product_categories as pc0
+                        CROSS JOIN
+                            Product_categories as pc1
+                        CROSS JOIN
+                            Categories as c
+                        WHERE
+                            p0.nutriscore < p1.nutriscore
+                        AND
+                            p1.product_name = %s
+                        AND
+                            p1.id = pc1.product_id
+                        AND
+                            pc1.category_product_id = c.id
+                        AND
+                            p0.id = pc0.product_id
+                        AND
+                            pc0.category_product_id = c.id
+                            """
 
     def insert_into_table(self, products):
         for product in products:
@@ -100,6 +173,33 @@ class Products(Table):
             self.database.cursor.execute(Products.SQL_QUERY_INSERT_INTO,
                                          product_attributes)
             self.database.cnx.commit()
+
+    def return_prod_cat(self):
+        self.database.cursor.execute(Products.SQL_QUERY_SELECT_PROD_CAT)
+        prod_cat = []
+        for item in self.database.cursor:
+            prod_cat_to_add = item[0], item[1]
+            prod_cat.append(prod_cat_to_add)
+
+        return prod_cat
+
+    def return_details(self, product_name):
+        self.database.cursor.execute(Products.SQL_QUERY_SELECT_DETAILS,
+                                     product_name)
+        details = []
+        for detail in self.database.cursor:
+            details.append(detail)
+
+        return details
+
+    def return_replace(self, prod_to_replace):
+        replacement = []
+        self.database.cursor.execute(Products.SQL_QUERY_REPLACE,
+                                     prod_to_replace)
+        for replace in self.database.cursor:
+            replacement.append(replace)
+
+        return replacement
 
 
 class Favorites(Table):
@@ -130,10 +230,27 @@ class Favorites(Table):
                             AND
                                 p1.product_name = %s"""
 
+    SQL_QUERY_SELECT_FAV_NAMES = """SELECT
+                                product_name
+                            FROM
+                                Products as p
+                            CROSS JOIN
+                                Favorites as f
+                            WHERE
+                                p.id = f.product_id_replacement"""
+
     def insert_into_table(self, product_names):
         self.database.cursor.execute(Favorites.SQL_QUERY_INSERT_INTO,
                                      product_names)
         self.database.cnx.commit()
+
+    def return_fav_names(self):
+        self.database.cursor.execute(Favorites.SQL_QUERY_SELECT_FAV_NAMES)
+        favs_names = []
+        for fav_name in self.database.cursor:
+            favs_names.append(fav_name)
+
+        return favs_names
 
 
 class ProductCategories(Table):
@@ -216,142 +333,33 @@ class ProductStores(Table):
         self.database.cnx.commit()
 
 
-class ReturnDatas(Table):
-    """Return necessary data from database to print it to user"""
+class Init():
 
-    SQL_QUERY_SELECT_CATEGORIES = """SELECT category_name FROM
-                                    Categories"""
+    def __init__(self):
+        self.db = Database(HOST, USER, PASSWORD, DATABASE)
+        self.purchase_stores = PurchaseStores(self.db)
+        self.categories = Categories(self.db)
+        self.products = Products(self.db)
+        self.product_categories = ProductCategories(self.db)
+        self.product_stores = ProductStores(self.db)
+        self.favorites = Favorites(self.db)
+        self.product_dict = None
 
-    SQL_QUERY_SELECT_PROD_CAT = """SELECT
-                                    p.product_name,
-                                    c.category_name,
-                                    pc.product_id,
-                                    pc.category_product_id
-                                FROM
-                                    Products as p
-                                CROSS JOIN
-                                    Categories as c
-                                CROSS JOIN
-                                    Product_categories as pc
-                                WHERE
-                                    p.id = pc.product_id
-                                AND
-                                    c.id = pc.category_product_id"""
+    def sync_products(self, search_terms):
+        datas = Openfoodfacts()
+        self.product_dict = datas.create_dict(search_terms)
 
-    SQL_QUERY_SELECT_DETAILS = """SELECT
-                                    product_name,
-                                    nutriscore,
-                                    link,
-                                    details,
-                                    s.store_name
-                                FROM
-                                    Products as p
-                                CROSS JOIN
-                                    Purchase_stores as s
-                                CROSS JOIN
-                                    Product_stores as ps
-                                WHERE
-                                    p.product_name = %s
-                                AND
-                                    p.id = ps.product_id
-                                AND
-                                    ps.purchase_store_id = s.id"""
+    def create_tables(self):
+        self.purchase_stores.create_table()
+        self.categories.create_table()
+        self.products.create_table()
+        self.product_categories.create_table()
+        self.product_stores.create_table()
+        self.favorites.create_table()
 
-    SQL_QUERY_SELECT_FAV_NAMES = """SELECT
-                                product_name
-                            FROM
-                                Products as p
-                            CROSS JOIN
-                                Favorites as f
-                            WHERE
-                                p.id = f.product_id_replacement"""
-
-    def return_categories(self):
-        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_CATEGORIES)
-        categories = []
-        for category in self.database.cursor:
-            cat_to_add = category[0]
-            categories.append(cat_to_add)
-
-        return categories
-
-    def return_prod_cat(self):
-        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_PROD_CAT)
-        prod_cat = []
-        for item in self.database.cursor:
-            prod_cat_to_add = item[0], item[1]
-            prod_cat.append(prod_cat_to_add)
-
-        return prod_cat
-
-    def return_details(self, product_name):
-        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_DETAILS,
-                                     product_name)
-        details = []
-        for detail in self.database.cursor:
-            details.append(detail)
-
-        return details
-
-    def return_replace(self, nutriscore_bef, prod_list):
-        replace_to_return = None
-        for prod in prod_list:
-            prod_replace_details = self.return_details(prod)
-            if prod_replace_details[0][1] < nutriscore_bef:
-                replace_to_return = prod_replace_details
-                self.return_replace(prod_replace_details[0][1], prod_list)
-
-        return replace_to_return
-
-    def return_fav_names(self):
-        self.database.cursor.execute(ReturnDatas.SQL_QUERY_SELECT_FAV_NAMES)
-        favs_names = []
-        for fav_name in self.database.cursor:
-            favs_names.append(fav_name)
-
-        return favs_names
-
-
-class Display():
-
-    def input(self, nb, message=""):
-        answer = 0
-        not_int = True
-        while not_int or answer < 0 or answer > nb:
-            try:
-                answer = int(input(message))
-                not_int = False
-            except ValueError:
-                print('Il faut entrer un nombre')
-
-            if answer < 0 or answer > nb:
-                print('Entrez un nombre valide')
-
-        return answer
-
-    def disp_categories(self, category_list):
-        print('Choisissez une categorie\n')
-        for i, category in enumerate(category_list):
-            print("{}- {}".format(i + 1, category))
-
-    def disp_products(self, category_list, prod_cat, answer):
-        print('Choisissez un produit\n')
-        i = 0
-        prod_list = []
-        for item in prod_cat:
-            if category_list[answer - 1] == item[1]:
-                print("{} - {}".format(i + 1, item[0]))
-                prod_to_add = (item[0],)
-                prod_list.append(prod_to_add)
-                i += 1
-
-        return prod_list
-
-    def disp_favs(self, fav_names):
-        for i, name in enumerate(fav_names):
-            print("{} - {}".format(i + 1, name[0]))
-
-    def disp_details(self, prod):
-        print("Nom: {}\nNutriscore: {}\nLien: {}\nDescription: {}\n\
-Ou l'acheter?: {}\n".format(prod[0][0], prod[0][1], prod[0][2],
-                            prod[0][3], prod[0][4]))
+    def insert_datas(self):
+        self.purchase_stores.insert_into_table(self.product_dict)
+        self.categories.insert_into_table(self.product_dict)
+        self.products.insert_into_table(self.product_dict)
+        self.product_categories.insert_into_table(self.product_dict)
+        self.product_stores.insert_into_table(self.product_dict)
