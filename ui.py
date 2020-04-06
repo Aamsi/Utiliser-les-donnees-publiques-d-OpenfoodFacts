@@ -1,4 +1,6 @@
 from database import Init
+import argparse
+import sys
 
 
 class Display():
@@ -7,7 +9,6 @@ class Display():
         self.init = Init()
         self.category_list = self.init.categories.return_categories()
         self.prod_cat = self.init.products.return_prod_cat()
-        self.fav_names = self.init.favorites.return_fav_names()
 
     def input(self, nb, message=""):
         answer = 0
@@ -43,8 +44,8 @@ class Display():
 
         return prod_list
 
-    def disp_favs(self):
-        for i, name in enumerate(self.fav_names):
+    def disp_favs(self, fav_names):
+        for i, name in enumerate(fav_names):
             print("{} - {}".format(i + 1, name[0]))
 
     def disp_details(self, prod):
@@ -55,20 +56,28 @@ Ou l'acheter?: {}\n".format(prod[0][0], prod[0][1], prod[0][2],
 
 class Interface():
 
-    def __init__(self, search_terms):
+    def __init__(self):
         self.init = Init()
         self.display = None
-        self.search_terms = search_terms
 
     def init_db(self):
-        self.init.sync_products(self.search_terms)
-        self.init.create_tables()
-        self.init.insert_datas()
-        self.display = Display()
+        parser = argparse.ArgumentParser(description='Chercher et/ou remplacer\
+ vos aliments')
+        parser.add_argument('--init', help='Initialise la base de donnee',
+                            action='store_true')
+        args = parser.parse_args()
+        if args.init:
+            self.init.sync_products()
+            self.init.create_tables()
+            self.init.insert_datas()
+            self.display = Display()
+        else:
+            print('Vous devez initialiser la base de donnee (--help)')
+            sys.exit()
 
     def print_favs(self):
         fav_names = self.init.favorites.return_fav_names()
-        self.display.disp_favs()
+        self.display.disp_favs(fav_names)
 
         if len(fav_names) > 0:
             answer = self.display.input(len(fav_names),

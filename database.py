@@ -70,9 +70,10 @@ class Categories(Table):
 
         categories_list = list(dict.fromkeys(categories_list))
         for category in categories_list:
-            category_to_add = {'category_name': category}
-            self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO,
-                                         category_to_add)
+            if category:
+                category_to_add = {'category_name': category}
+                self.database.cursor.execute(Categories.SQL_QUERY_INSERT_INTO,
+                                             category_to_add)
         self.database.cnx.commit()
 
     def return_categories(self):
@@ -345,9 +346,9 @@ class Init():
         self.favorites = Favorites(self.db)
         self.product_dict = None
 
-    def sync_products(self, search_terms):
+    def sync_products(self):
         datas = Openfoodfacts()
-        self.product_dict = datas.create_dict(search_terms)
+        self.product_dict = datas.create_dict()
 
     def create_tables(self):
         self.purchase_stores.create_table()

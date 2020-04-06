@@ -4,14 +4,20 @@ import requests
 class Openfoodfacts:
     """Request data and treat it"""
 
-    def search_product(self, search_terms):
+    def __init__(self):
+        self.search_terms = ['Confitures de fruits rouges',
+                             'Chocolats en poudre', 'Cookies au chocolat',
+                             'Mayonnaises', 'Yaourts aux fruits',
+                             'Glaces et sorbets']
+
+    def search_product(self):
         products = []
 
-        for search_term in search_terms:
+        for search_term in self.search_terms:
             payload = {
                 'search_terms': search_term,
                 'sort_by': 'unique_scans_n',
-                'page_size': 50,
+                'page_size': 10,
                 'json': 1
             }
 
@@ -22,8 +28,8 @@ class Openfoodfacts:
 
         return products
 
-    def create_dict(self, search_terms):
-        products = self.search_product(search_terms)
+    def create_dict(self):
+        products = self.search_product()
         ordered_products = []
         for product in products:
             for attribute in product:
@@ -49,8 +55,11 @@ class Openfoodfacts:
 
     def filter_category(self, attribute):
         categories = attribute['categories'].split(',')
-        category = categories[2].strip().capitalize()
-        return category
+        for term in self.search_terms:
+            for category_to_add in categories:
+                category = category_to_add.strip().capitalize()
+                if category == term:
+                    return category
 
     def generic_name(self, attribute):
         try:
