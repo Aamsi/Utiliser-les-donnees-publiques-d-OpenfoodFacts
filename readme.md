@@ -11,7 +11,7 @@ Parce que c'est cooooool
 
 `GRANT ALL PRIVILEGES ON database_name.* TO 'username'@'localhost';`
 
-***Puis configure le fichier config.py avec le nom de ton user, le mot de passe et le nom de ta base de donnée***
+***Puis creer un fichier config.py avec le nom de ton user, le mot de passe et le nom de ta base de donnée (voir config.py.template***
 ```
 HOST = 'localhost'
 USER = 'user_name'
@@ -24,14 +24,18 @@ DATABASE = 'database_name'
 `pip install -r requirements.txt`
 
 ## Lance le programme
-`python main.py` 
+***Pour synchroniser les données et initialiser la base de donnée***
+
+`python main.py --init --sync`
+
+`Les options doivent être utilisées seulement la premiere fois lors du lancement du programme.`
 
 ## Ok mais pour quoi faire?
 
-Tu peux rechercher des aliments dans la base de donnee et voir leur description.
+- Tu peux rechercher des aliments dans la base de donnee et voir leur description.
 
-Tu peux chercher un substitut pour l'aliment que t'aimerais remplacer.
+- Tu peux chercher un substitut pour l'aliment que t'aimerais remplacer.
 
-Tu peux sauvegarder tes aliments favoris pour les retrouver plus tard.
+- Tu peux sauvegarder tes aliments favoris pour les retrouver plus tard.
 
 Et voilà! :ok_hand:
