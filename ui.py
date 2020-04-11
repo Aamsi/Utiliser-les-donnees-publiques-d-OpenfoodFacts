@@ -1,6 +1,4 @@
 from database import Init
-import argparse
-import sys
 
 
 class Display():
@@ -60,20 +58,15 @@ class Interface():
         self.init = Init()
         self.display = None
 
+    def sync_products(self):
+        self.init.sync_products()
+
     def init_db(self):
-        parser = argparse.ArgumentParser(description='Chercher et/ou remplacer\
- vos aliments')
-        parser.add_argument('--init', help='Initialise la base de donnee',
-                            action='store_true')
-        args = parser.parse_args()
-        if args.init:
-            self.init.sync_products()
-            self.init.create_tables()
-            self.init.insert_datas()
-            self.display = Display()
-        else:
-            print('Vous devez initialiser la base de donnee (--help)')
-            sys.exit()
+        self.init.create_tables()
+        self.init.insert_datas()
+
+    def init_disp(self):
+        self.display = Display()
 
     def print_favs(self):
         fav_names = self.init.favorites.return_fav_names()
