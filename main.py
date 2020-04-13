@@ -21,7 +21,7 @@ def main():
         ui.sync_products()
         ui.init_db()
         print("Données d'Openfoodfacts récupérées")
-        print('Création des tables et insertion des données\n')
+        print("Création des tables et insertion des données\n")
     elif args.init & (not args.sync):
         print("Vous ne pouvez pas initialiser la base de données\
  sans synchroniser les données")

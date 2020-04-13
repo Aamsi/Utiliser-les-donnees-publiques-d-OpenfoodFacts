@@ -147,8 +147,6 @@ class Products(Table):
                             Product_categories as pc0
                         CROSS JOIN
                             Product_categories as pc1
-                        CROSS JOIN
-                            Categories as c
                         WHERE
                             p0.nutriscore < p1.nutriscore
                         AND
@@ -156,12 +154,10 @@ class Products(Table):
                         AND
                             p1.id = pc1.product_id
                         AND
-                            pc1.category_product_id = c.id
+                            pc1.category_product_id = pc0.category_product_id
                         AND
                             p0.id = pc0.product_id
-                        AND
-                            pc0.category_product_id = c.id
-                            """
+                        """
 
     def insert_into_table(self, products):
         for product in products:

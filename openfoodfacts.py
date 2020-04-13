@@ -7,8 +7,10 @@ class Openfoodfacts:
     def __init__(self):
         self.search_terms = ['Confitures de fruits rouges',
                              'Chocolats en poudre', 'Cookies au chocolat',
-                             'Mayonnaises', 'Yaourts aux fruits',
-                             'Glaces et sorbets']
+                             'Mayonnaises', 'Yaourts aux fruits rouges',
+                             'Glaces et sorbets',  'Cookies au chocolat',
+                             'Céréales fourrées', 'Céréales au chocolat',
+                             'Chips de pommes de terre', 'Limonades']
 
     def search_product(self):
         products = []
@@ -17,7 +19,7 @@ class Openfoodfacts:
             payload = {
                 'search_terms': search_term,
                 'sort_by': 'unique_scans_n',
-                'page_size': 10,
+                'page_size': 20,
                 'json': 1
             }
 
@@ -50,7 +52,7 @@ class Openfoodfacts:
         try:
             return attribute['stores_tags'][0].strip().capitalize()\
                 .replace('-', ' ')
-        except IndexError:
+        except (IndexError, KeyError):
             return 'Aucun'
 
     def filter_category(self, attribute):
