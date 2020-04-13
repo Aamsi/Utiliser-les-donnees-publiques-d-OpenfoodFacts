@@ -11,7 +11,7 @@ Parce que c'est cooooool
 
 `GRANT ALL PRIVILEGES ON database_name.* TO 'username'@'localhost';`
 
-***Puis creer un fichier config.py avec le nom de ton user, le mot de passe et le nom de ta base de donnée (voir config.py.template)***
+***Puis crée un fichier config.py avec le nom de ton user, le mot de passe et le nom de ta base de donnée (voir config.py.template)***
 ```
 HOST = 'localhost'
 USER = 'user_name'
