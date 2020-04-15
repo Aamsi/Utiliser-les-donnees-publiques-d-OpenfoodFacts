@@ -30,6 +30,10 @@ DATABASE = 'database_name'
 
 `Les options doivent être utilisées seulement la premiere fois lors du lancement du programme.`
 
+***Pour lancer le programme***
+
+`python main.py`
+
 ## Ok mais pour quoi faire?
 
 - Tu peux rechercher des aliments dans la base de donnee et voir leur description.
