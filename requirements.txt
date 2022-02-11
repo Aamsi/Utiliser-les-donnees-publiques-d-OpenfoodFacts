@@ -1,5 +1,5 @@
 mysql-connector-python==8.0.19
-protobuf==3.6.1
+protobuf==3.15.0
 dnspython==1.16.0
 requests==2.23.0
 
